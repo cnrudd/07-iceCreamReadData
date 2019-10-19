@@ -1,9 +1,9 @@
 /**
- * @see {@link https://www.npmjs.com/package/mysql}
+ * @see {@link https://www.npmjs.com/package/promise-mysql}
  */
-const mysql = require('mysql');
+const mysql = require('promise-mysql');
 
-const connection = mysql.createConnection({
+mysql.createConnection({
   host: 'localhost',
 
   // Your port; if not 3306
@@ -15,52 +15,43 @@ const connection = mysql.createConnection({
   // Your password
   password: '',
   database: 'ice_cream_db',
-});
+})
+    .then((connection) => {
+      return createProduct(connection)
+          .then(() => updateProduct(connection))
+          .then(() => deleteProduct(connection))
+          .then(() => readProducts(connection))
+          .then(()=> connection.end());
+    });
 
-connection.connect((err) => {
-  if (err) throw err;
-  console.log('connected as id ' + connection.threadId);
-  doCRUD();
-});
-
-/**
- * Called by callback function upon successful establishment of DB connection.
- * @see {@link https://www.npmjs.com/package/mysql#performing-queries}
- */
-function doCRUD() {
-  createProduct();
-}
 
 /**
  * Adds a row to DB
+ * @param {Promise} connection
+ * @return {Promise}
  */
-function createProduct() {
+function createProduct(connection) {
   console.log('Inserting a new product...\n');
-  const query = connection.query(
+  return connection.query(
       'INSERT INTO products SET ?',
       {
         flavor: 'Rocky Road',
         price: 3.0,
         quantity: 50,
-      },
-      function(err, res) {
-        if (err) throw err;
+      })
+      .then((res) => {
         console.log(res.affectedRows + ' product inserted!\n');
-        // Call updateProduct AFTER the INSERT completes
-        updateProduct();
-      }
-  );
-
-  // logs the actual query being run
-  console.log(query.sql);
+      });
 }
 
 /**
  * Updates a row in the DB
+ * @param {Promise} connection
+ * @return {Promise}
  */
-function updateProduct() {
+function updateProduct(connection) {
   console.log('Updating all Rocky Road quantities...\n');
-  const query = connection.query(
+  return connection.query(
       'UPDATE products SET ? WHERE ?',
       [
         {
@@ -69,47 +60,38 @@ function updateProduct() {
         {
           flavor: 'Rocky Road',
         },
-      ],
-      function(err, res) {
-        if (err) throw err;
+      ])
+      .then((res) => {
         console.log(res.affectedRows + ' products updated!\n');
-        // Call deleteProduct AFTER the UPDATE completes
-        deleteProduct();
-      }
-  );
-
-  // logs the actual query being run
-  console.log(query.sql);
+      });
 }
 
 /**
  * Deletes a row from the DB
+ * @param {Promise} connection
+ * @return {Promise}
  */
-function deleteProduct() {
+function deleteProduct(connection) {
   console.log('Deleting all strawberry icecream...\n');
-  connection.query(
+  return connection.query(
       'DELETE FROM products WHERE ?',
       {
         flavor: 'strawberry',
-      },
-      function(err, res) {
-        if (err) throw err;
+      })
+      .then((res) => {
         console.log(res.affectedRows + ' products deleted!\n');
-        // Call readProducts AFTER the DELETE completes
-        readProducts();
-      }
-  );
+      });
 }
 
 /**
  * Reads all products from the DB
+ * @param {Promise} connection
+ * @return {Promise}
  */
-function readProducts() {
+function readProducts(connection) {
   console.log('Selecting all products...\n');
-  connection.query('SELECT * FROM products', function(err, res) {
-    if (err) throw err;
-    // Log all results of the SELECT statement
-    console.log(res);
-    connection.end();
-  });
+  return connection.query('SELECT * FROM products')
+      .then((res) => {
+        console.log(res);
+      });
 }
