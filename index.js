@@ -1,3 +1,6 @@
+/**
+ * @see {@link https://www.npmjs.com/package/mysql}
+ */
 const mysql = require('mysql');
 
 const connection = mysql.createConnection({
@@ -22,6 +25,7 @@ connection.connect((err) => {
 
 /**
  * Called by callback function upon successful establishment of DB connection.
+ * @see {@link https://www.npmjs.com/package/mysql#performing-queries}
  */
 function doCRUD() {
   createProduct();
