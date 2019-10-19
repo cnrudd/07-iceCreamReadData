@@ -34,18 +34,17 @@ run();
  * @param {Promise} connection
  * @return {Promise}
  */
-function createProduct(connection) {
+async function createProduct(connection) {
   console.log('Inserting a new product...\n');
-  return connection.query(
+  const response = await connection.query(
       'INSERT INTO products SET ?',
       {
         flavor: 'Rocky Road',
         price: 3.0,
         quantity: 50,
-      })
-      .then((res) => {
-        console.log(res.affectedRows + ' product inserted!\n');
       });
+
+  console.log(`${response.affectedRows} product inserted!\n`);
 }
 
 /**
