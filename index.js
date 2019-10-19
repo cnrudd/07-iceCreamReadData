@@ -3,26 +3,30 @@
  */
 const mysql = require('promise-mysql');
 
-mysql.createConnection({
-  host: 'localhost',
+/**
+ * Bring DB config in from separate file
+ * to keep logic clean.
+ */
+const conf = require('./config.js');
 
-  // Your port; if not 3306
-  port: 3306,
+/**
+ * Main entry point to script
+ * This is an 'async' function
+ * @see {@link https://hackernoon.com/6-reasons-why-javascripts-async-await-blows-promises-away-tutorial-c7ec10518dd9}
+ * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function}
+ * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await}
+ */
+async function run() {
+  const connection = await mysql.createConnection(conf);
 
-  // Your username
-  user: 'root',
+  await createProduct(connection);
+  await updateProduct(connection);
+  await deleteProduct(connection);
+  await readProducts(connection);
+  connection.end();
+}
 
-  // Your password
-  password: '',
-  database: 'ice_cream_db',
-})
-    .then((connection) => {
-      return createProduct(connection)
-          .then(() => updateProduct(connection))
-          .then(() => deleteProduct(connection))
-          .then(() => readProducts(connection))
-          .then(()=> connection.end());
-    });
+run();
 
 
 /**
